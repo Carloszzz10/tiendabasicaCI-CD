@@ -8,6 +8,8 @@ public class TiendaBasica2Application {
 
     public static void main(String[] args) {
         SpringApplication.run(TiendaBasica2Application.class, args);
+        System.out.println("🚀 Aplicación Tienda Básica iniciada correctamente!");
+    }
     }
 
-}
+
