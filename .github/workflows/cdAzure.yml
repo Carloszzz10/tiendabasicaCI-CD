@@ -1,0 +1,115 @@
+# This workflow will build and push a Docker container to an Azure Web App when a commit is pushed to your default branch.
+#
+# This workflow assumes you have already created the target Azure App Service web app.
+# For instructions see https://docs.microsoft.com/en-us/azure/app-service/quickstart-custom-container?tabs=dotnet&pivots=container-linux
+#
+# To configure this workflow:
+#
+# 1. Download the Publish Profile for your Azure Web App. You can download this file from the Overview page of your Web App in the Azure Portal.
+#    For more information: https://docs.microsoft.com/en-us/azure/app-service/deploy-github-actions?tabs=applevel#generate-deployment-credentials
+#
+# 2. Create a secret in your repository named AZURE_WEBAPP_PUBLISH_PROFILE, paste the publish profile contents as the value of the secret.
+#    For instructions on obtaining the publish profile see: https://docs.microsoft.com/azure/app-service/deploy-github-actions#configure-the-github-secret
+#
+# 3. Create a GitHub Personal access token with "repo" and "read:packages" permissions.
+#
+# 4. Create three app settings on your Azure Web app:
+#       DOCKER_REGISTRY_SERVER_URL: Set this to "https://ghcr.io"
+#       DOCKER_REGISTRY_SERVER_USERNAME: Set this to the GitHub username or organization that owns the repository
+#       DOCKER_REGISTRY_SERVER_PASSWORD: Set this to the value of your PAT token from the previous step
+#
+# 5. Change the value for the AZURE_WEBAPP_NAME.
+#
+# For more information on GitHub Actions for Azure: https://github.com/Azure/Actions
+# For more information on the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
+# For more samples to get started with GitHub Action workflows to deploy to Azure: https://github.com/Azure/actions-workflow-samples
+
+name: Build and deploy a container to an Azure Web App
+
+env:
+  AZURE_WEBAPP_NAME: your-app-name  # set this to the name of your Azure Web App
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+   runs-on: ubuntu-latest
+
+   steps:
+        # 1. Descargar código
+      - name: Checkout código
+      - uses: actions/checkout@v4
+      
+      # 2. Configurar Java 17
+      - name: Configurar JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      # 3. Cache Maven
+      - name: Cache Maven dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+
+      - name: Compilar aplicación
+        run: ./mvnw clean package -DskipTests
+          
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@f95db51fddba0c2d1ec667646a06c2ce06100226 # v3.0.0
+
+      - name: Log in to GitHub container registry
+        uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d # v3.0.0
+        with:
+          registry: ghcr.io
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+
+      - name: Build and push container image to registry
+        uses: docker/build-push-action@0565240e2d4ab88bba5387d719585280857ece09 # v5.0.0
+        with:
+          context: .
+          push: true
+          file: ./Dockerfile
+          tags: |
+           ${{ secrets.DOCKER_USERNAME }}/mi-app-spring:latest
+           ${{ secrets.DOCKER_USERNAME }}/mi-app-spring:${{ github.sha }}
+              # 8. Mostrar información de la imagen
+      - name: Información de la imagen
+        run: |
+         echo "✅ Imagen subida exitosamente!"
+         echo "🐳 Docker Hub: ${{ secrets.DOCKER_USERNAME }}/mi-app-spring:latest"
+         echo "🏷️ Tag: ${{ github.sha }}"
+          
+      - name: Esperar imagen en Docker Hub
+        run: sleep 30
+    
+    # 9. 🚀 DESPLEGAR EN AZURE CONTAINER APPS
+      - name: Deploy to Azure Container Apps
+        uses: azure/container-apps-deploy-action@v1
+        with:
+         app-name: ${{ vars.AZURE_WEBAPP_NAME }}
+         resource-group: rg-mi-app-spring
+         container-image: ${{ vars.DOCKERHUB_USERNAME }}/mi-app-spring:latest
+         azure-credentials: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+    
+      - name: ✅ Deploy exitoso
+        run: |
+         echo "🎉 ¡Deploy completado exitosamente!"
+         echo "🐳 Docker Hub: ${{ vars.DOCKERHUB_USERNAME }}/mi-app-spring:latest"
+         echo "🏷️ Tag: ${{ github.sha }}"
+         echo "🌐 Tu app está online en Azure Container Apps!"
+         echo "📱 Revisa tu aplicación en el portal de Azure"
+
+
+ 
+
+
