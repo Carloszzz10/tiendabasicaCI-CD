@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  # Base de datos MySQL
+  mysql:
+    image: mysql:8.0
+    container_name: tienda-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: carlos180
+      MYSQL_DATABASE: user_db
+
+    ports:
+      - "3307:3306"  # Puerto 3307 en tu máquina, 3306 en el contenedor
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - tienda-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  # Aplicación Spring Boot
+  app:
+    build: .
+    container_name: tienda-app
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      # Configuración para conectar a MySQL en el contenedor
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/user_db
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: carlos180
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    ports:
+      - "8080:8080"
+    networks:
+      - tienda-network
+
+# Volúmenes para persistir datos
+volumes:
+  mysql_data:
+
+# Red para comunicación entre contenedores
+networks:
+  tienda-network:
+    driver: bridge
