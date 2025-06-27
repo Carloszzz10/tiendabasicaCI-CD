@@ -80,8 +80,8 @@ jobs:
           push: true
           file: ./Dockerfile
           tags: |
-           ${{ secrets.DOCKER_USERNAME }}/mi-app-spring:latest
-           ${{ secrets.DOCKER_USERNAME }}/mi-app-spring:${{ github.sha }}
+           ${{ secrets.DOCKERHUB_USERNAME }}/mi-app-spring:latest
+           ${{ secrets.DOCKERHUB_USERNAME }}/mi-app-spring:${{ github.sha }}
               # 8. Mostrar información de la imagen
       - name: Información de la imagen
         run: |
