@@ -90,14 +90,11 @@ jobs:
       # 10. Esperar que la imagen esté disponible
       - name: Esperar imagen en Docker Hub
         run: sleep 30
-      # 11. Deploy a Railway usando CLI
+      # 11. Deploy a Railway
       - name: Deploy to Railway
-        run: |
-          npm install -g @railway/cli
-          echo "${{ secrets.RAILWAY_TOKEN }}" | railway login --token
-          railway up
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        uses: railway/github-action@v1
+        with:
+          token: ${{ secrets.RAILWAY_TOKEN }}
           
       # 12. Notificar éxito
       - name: Deploy exitoso
@@ -106,5 +103,4 @@ jobs:
           echo "🐳 Docker Hub: ${{ vars.DOCKERHUB_USERNAME }}/mi-app-spring:latest"
           echo "🏷️ Tag: ${{ github.sha }}"
           echo "🚀 Tu app está desplegada en Railway!"
-
 
