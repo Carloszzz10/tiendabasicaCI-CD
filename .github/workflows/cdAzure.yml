@@ -23,7 +23,6 @@
 # For more information on GitHub Actions for Azure: https://github.com/Azure/Actions
 # For more information on the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # For more samples to get started with GitHub Action workflows to deploy to Azure: https://github.com/Azure/actions-workflow-samples
-
 name: Deploy to Railway
 on:
   push:
@@ -90,11 +89,11 @@ jobs:
       # 10. Esperar que la imagen esté disponible
       - name: Esperar imagen en Docker Hub
         run: sleep 30
-      # 11. Deploy a Railway
+      # 11. Deploy a Railway usando CLI
       - name: Deploy to Railway
-        uses: railway/github-action@v1
-        with:
-          token: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          npm install -g @railway/cli
+          RAILWAY_TOKEN=${{ secrets.RAILWAY_TOKEN }} railway up
           
       # 12. Notificar éxito
       - name: Deploy exitoso
