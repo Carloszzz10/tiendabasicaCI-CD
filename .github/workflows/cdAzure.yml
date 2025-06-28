@@ -24,6 +24,7 @@
 # For more information on the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # For more samples to get started with GitHub Action workflows to deploy to Azure: https://github.com/Azure/actions-workflow-samples
 
+
 name: Deploy to Railway
 on:
   push:
@@ -93,12 +94,12 @@ jobs:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
           npm install -g @railway/cli
-          echo "🔍 Verificando conexión con Railway..."
+          echo "🔍 Verificando conexión..."
           railway whoami
-          echo "📋 Listando proyectos..."
-          railway list
-          echo "🚀 Deployando..."
-          railway up --service ${{ vars.RAILWAY_SERVICE_NAME }} --project ${{ vars.RAILWAY_PROJECT_ID }}
+          echo "📋 Listando servicios..."
+          railway status
+          echo "🚀 Deployando servicio..."
+          railway up --service tiendabasicaCI-CD
           
       # 10. Notificar éxito
       - name: Deploy exitoso
