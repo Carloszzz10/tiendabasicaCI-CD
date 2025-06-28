@@ -89,10 +89,10 @@ jobs:
       # 9. Deploy a Railway usando CLI
       - name: Deploy to Railway
         env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+         RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
           npm install -g @railway/cli
-          railway login --token $RAILWAY_TOKEN
+          railway login
           railway up --service ${{ vars.RAILWAY_SERVICE_NAME }}
           
       # 10. Notificar éxito
