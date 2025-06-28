@@ -35,22 +35,19 @@ permissions:
   contents: read
 
 jobs:
+
   deploy:
     runs-on: ubuntu-latest
-    
     steps:
-      # 1. Descargar código
       - name: Checkout código
         uses: actions/checkout@v4
       
-      # 2. Configurar Java 17
       - name: Configurar JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
           
-      # 3. Cache Maven
       - name: Cache Maven dependencies
         uses: actions/cache@v4
         with:
@@ -58,26 +55,21 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
           
-      # 4. Dar permisos al Maven Wrapper
       - name: Dar permisos al Maven Wrapper
         run: chmod +x ./mvnw
         
-      # 5. Compilar aplicación
       - name: Compilar aplicación
         run: ./mvnw clean package -DskipTests
           
-      # 6. Setup Docker Buildx
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
         
-      # 7. Login a Docker Hub
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
           
-      # 8. Build y Push imagen a Docker Hub
       - name: Build and push container image to Docker Hub
         uses: docker/build-push-action@v5
         with:
@@ -88,23 +80,14 @@ jobs:
             ${{ vars.DOCKERHUB_USERNAME }}/mi-app-spring:latest
             ${{ vars.DOCKERHUB_USERNAME }}/mi-app-spring:${{ github.sha }}
             
-      # 9. Deploy a Railway usando CLI
+      # NUEVO DEPLOY RAILWAY QUE SÍ FUNCIONA
       - name: Deploy to Railway
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        run: |
-          npm install -g @railway/cli
-          echo "🔍 Verificando conexión..."
-          railway whoami
-          echo "📋 Listando servicios..."
-          railway status
-          echo "🚀 Deployando servicio..."
-          railway up --service tiendabasicaCI-CD
+        uses: bervProject/railway-deploy@v1.0.0
+        with:
+          railway_token: ${{ secrets.RAILWAY_TOKEN }}
+          service: tiendabasicaCI-CD
           
-      # 10. Notificar éxito
       - name: Deploy exitoso
         run: |
-          echo "🎉 ¡Deploy completado exitosamente!"
-          echo "🐳 Docker Hub: ${{ vars.DOCKERHUB_USERNAME }}/mi-app-spring:latest"
-          echo "🏷️ Tag: ${{ github.sha }}"
-          echo "🚀 Tu app está desplegada en Railway!"
+          echo "🎉 ¡Deploy completado!"
+          echo "🐳 Docker: ${{ vars.DOCKERHUB_USERNAME }}/mi-app-spring:latest"
