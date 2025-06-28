@@ -93,6 +93,11 @@ jobs:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
           npm install -g @railway/cli
+          echo "🔍 Verificando conexión con Railway..."
+          railway whoami
+          echo "📋 Listando proyectos..."
+          railway list
+          echo "🚀 Deployando..."
           railway up --service ${{ vars.RAILWAY_SERVICE_NAME }} --project ${{ vars.RAILWAY_PROJECT_ID }}
           
       # 10. Notificar éxito
